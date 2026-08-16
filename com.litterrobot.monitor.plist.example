@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.litterrobot.monitor</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/abhishekyenpure/repositories/litter-robot-monitor/venv/bin/python</string>
+        <string>/Users/abhishekyenpure/repositories/litter-robot-monitor/main.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/abhishekyenpure/repositories/litter-robot-monitor</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/abhishekyenpure/repositories/litter-robot-monitor/data/monitor.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/abhishekyenpure/repositories/litter-robot-monitor/data/monitor.err.log</string>
+</dict>
+</plist>
