@@ -11,10 +11,12 @@ and texts you (via your carrier's email-to-SMS gateway) when:
 1. Create a virtualenv and install dependencies:
 
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+   source setup.sh
    ```
+
+   (must be `source`d, not run as `./setup.sh`, so the venv stays active in
+   your current shell). In any new shell after that, reactivate it with
+   `source venv/bin/activate`.
 
 2. Copy `.env.example` to `.env` and fill in:
    - Your Whisker/Litter-Robot app username + password
