@@ -144,14 +144,19 @@ Docker Engine. The same `Dockerfile` works unchanged.
    # edit the copied file if your repo path differs from ~/repositories/litter-robot-monitor
 
    systemctl --user daemon-reload
-   systemctl --user enable --now litter-robot-monitor.service
+   systemctl --user start litter-robot-monitor.service
 
    # lets the user service start on boot even before you log in
    loginctl enable-linger "$(whoami)"
    ```
 
    Systemd's Podman generator turns the `.container` file into a service
-   automatically on `daemon-reload` — no `podman create` step needed.
+   automatically on `daemon-reload` — no `podman create` step needed. Don't
+   run `systemctl --user enable` on it — Quadlet-generated units live under
+   `/run/user/<uid>/systemd/generator/` and systemd rejects enabling those
+   directly (`Unit ... is transient or generated`). The `[Install]` section
+   already in the `.container` file is what makes it start automatically on
+   boot; `start` (or just rebooting, once linger is enabled) is all you need.
 
 5. Check logs / stop it:
 
