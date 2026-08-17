@@ -19,10 +19,11 @@ def _required(name: str) -> str:
 class Config:
     littlerobot_username: str
     litterrobot_password: str
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_from_number: str
-    twilio_to_number: str
+    smtp_host: str
+    smtp_port: int
+    smtp_username: str
+    smtp_password: str
+    sms_gateway_address: str
     poll_interval_minutes: float
     waste_drawer_full_threshold: float
     litter_level_low_threshold: float
@@ -34,10 +35,11 @@ def load_config() -> Config:
     return Config(
         littlerobot_username=_required("LITTERROBOT_USERNAME"),
         litterrobot_password=_required("LITTERROBOT_PASSWORD"),
-        twilio_account_sid=_required("TWILIO_ACCOUNT_SID"),
-        twilio_auth_token=_required("TWILIO_AUTH_TOKEN"),
-        twilio_from_number=_required("TWILIO_FROM_NUMBER"),
-        twilio_to_number=_required("TWILIO_TO_NUMBER"),
+        smtp_host=os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+        smtp_port=int(os.environ.get("SMTP_PORT", 587)),
+        smtp_username=_required("SMTP_USERNAME"),
+        smtp_password=_required("SMTP_PASSWORD"),
+        sms_gateway_address=_required("SMS_GATEWAY_ADDRESS"),
         poll_interval_minutes=float(os.environ.get("POLL_INTERVAL_MINUTES", 15)),
         waste_drawer_full_threshold=float(os.environ.get("WASTE_DRAWER_FULL_THRESHOLD", 80)),
         litter_level_low_threshold=float(os.environ.get("LITTER_LEVEL_LOW_THRESHOLD", 20)),
