@@ -121,6 +121,14 @@ Podman has no persistent background daemon and runs rootless by default,
 which makes it a lighter footprint on a storage/RAM-constrained Pi than
 Docker Engine. The same `Dockerfile` works unchanged.
 
+Because Podman is rootless, it remaps container UIDs to a subordinate range
+on the host by default — so the container's `monitor` user (uid 1000)
+doesn't actually match your host user on the bind-mounted `./data`
+directory, even if both show as uid 1000. Without `--userns=keep-id` (or
+`UserNS=keep-id` in the Quadlet file below), writes to `data/state.json`
+fail with `PermissionError` — the alert state just won't persist across
+restarts, it won't crash the container, so this is easy to miss.
+
 1. Copy the repo + your filled-in `.env` to the Pi, same as the Docker flow.
 
 2. Build the image:

@@ -6,6 +6,7 @@ After=network-online.target
 Image=localhost/litter-robot-monitor:latest
 EnvironmentFile=%h/repositories/litter-robot-monitor/.env
 Volume=%h/repositories/litter-robot-monitor/data:/app/data
+UserNS=keep-id
 
 [Service]
 Restart=always
