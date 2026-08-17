@@ -113,6 +113,81 @@ docker buildx build --platform linux/arm64 -t litter-robot-monitor .
 architecture is spottier, so a build failure there may need
 `build-essential` added to the `Dockerfile`.)
 
+## Running it with Podman (lighter-weight alternative to Docker)
+
+Podman has no persistent background daemon and runs rootless by default,
+which makes it a lighter footprint on a storage/RAM-constrained Pi than
+Docker Engine. The same `Dockerfile` works unchanged.
+
+1. Copy the repo + your filled-in `.env` to the Pi, same as the Docker flow.
+
+2. Build the image:
+
+   ```bash
+   podman build -t litter-robot-monitor .
+   mkdir -p data
+   ```
+
+3. Run the smoke test first (see below) to confirm the image, credentials,
+   and gateway all actually work before leaving it running unattended.
+
+4. Set it up as a persistent, boot-surviving service via systemd (plain
+   `podman run --restart` doesn't survive a reboot on its own — it needs a
+   systemd unit to relaunch it):
+
+   ```bash
+   podman create --name litter-robot-monitor \
+     --env-file .env \
+     -v ./data:/app/data \
+     litter-robot-monitor
+
+   mkdir -p ~/.config/systemd/user
+   podman generate systemd --name litter-robot-monitor --files --restart-policy=always
+   mv container-litter-robot-monitor.service ~/.config/systemd/user/
+
+   systemctl --user daemon-reload
+   systemctl --user enable --now container-litter-robot-monitor.service
+
+   # lets the user service start on boot even before you log in
+   loginctl enable-linger "$(whoami)"
+   ```
+
+5. Check logs / stop it:
+
+   ```bash
+   journalctl --user -u container-litter-robot-monitor.service -f
+   systemctl --user stop container-litter-robot-monitor.service
+   ```
+
+   To pick up code changes later: rebuild the image, then
+   `podman rm -f litter-robot-monitor` and repeat step 4's `podman create` +
+   `generate systemd` + `enable --now`.
+
+## Verifying a deployment actually works
+
+`scripts/smoke_test.py` logs into your Whisker account, prints your robot's
+real waste drawer / litter level readings, and (with `--notify`) sends one
+real test text through the SMS gateway. Run it once after any deployment to
+confirm credentials and the gateway are both working, before trusting the
+long-running poll loop:
+
+```bash
+# venv
+python scripts/smoke_test.py --notify
+
+# Docker
+docker compose run --rm litter-robot-monitor python scripts/smoke_test.py --notify
+
+# Podman
+podman run --rm --env-file .env litter-robot-monitor python scripts/smoke_test.py --notify
+```
+
+It exits `0` and prints "Smoke test passed." on success, or a `FAILED:`
+line explaining what broke (bad Whisker login, no robots on the account, or
+an SMTP/gateway failure) with a nonzero exit code otherwise. There's no
+other automated test suite in this repo — the monitor logic is simple
+enough that this end-to-end check is the practical way to verify it.
+
 ## Notes
 
 - Litter-Robot 3 only exposes waste drawer level (no litter/globe level), so

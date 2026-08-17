@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY litter_monitor/ litter_monitor/
+COPY scripts/ scripts/
 COPY main.py .
 
 RUN useradd --create-home --uid 1000 monitor \
