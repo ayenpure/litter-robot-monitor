@@ -1,0 +1,8 @@
+services:
+  litter-robot-monitor:
+    build: .
+    image: litter-robot-monitor
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data

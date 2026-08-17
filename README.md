@@ -74,6 +74,45 @@ Logs go to `data/monitor.log` / `data/monitor.err.log`. To stop it:
 launchctl unload ~/Library/LaunchAgents/com.litterrobot.monitor.plist
 ```
 
+## Running it in Docker (e.g. on a Raspberry Pi)
+
+A `Dockerfile` and `docker-compose.yml` are included. This runs well on a Pi
+4/5 on 64-bit Raspberry Pi OS — the base image and all dependencies have
+prebuilt `linux/arm64` wheels, so no compiler/build step is needed.
+
+1. Copy the repo to the Pi (`git clone`/`scp`/etc.), with your filled-in
+   `.env` alongside it (it's gitignored, so copy it separately).
+
+2. Build and run:
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   This builds the image, starts the container in the background with
+   `restart: unless-stopped` (so it survives reboots and crashes), and
+   mounts `./data` into the container so `data/state.json` (alert state)
+   persists across restarts.
+
+3. Check logs / stop it:
+
+   ```bash
+   docker compose logs -f
+   docker compose down
+   ```
+
+If you're building on a different machine (e.g. this Mac) and pushing to
+the Pi instead of building on-device, cross-build for arm64 with:
+
+```bash
+docker buildx build --platform linux/arm64 -t litter-robot-monitor .
+```
+
+(32-bit Raspberry Pi OS uses `armv7` — swap the platform flag to
+`linux/arm/v7` if that's what you're running; wheel availability for that
+architecture is spottier, so a build failure there may need
+`build-essential` added to the `Dockerfile`.)
+
 ## Notes
 
 - Litter-Robot 3 only exposes waste drawer level (no litter/globe level), so
