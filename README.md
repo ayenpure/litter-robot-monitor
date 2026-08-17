@@ -133,37 +133,42 @@ Docker Engine. The same `Dockerfile` works unchanged.
 3. Run the smoke test first (see below) to confirm the image, credentials,
    and gateway all actually work before leaving it running unattended.
 
-4. Set it up as a persistent, boot-surviving service via systemd (plain
-   `podman run --restart` doesn't survive a reboot on its own — it needs a
-   systemd unit to relaunch it):
+4. Set it up as a persistent, boot-surviving service using a **Quadlet**
+   (the current recommended way to run Podman containers under systemd —
+   `podman generate systemd` still works but is deprecated on Podman 4.4+).
+   A template is included as `litter-robot-monitor.container.example`:
 
    ```bash
-   podman create --name litter-robot-monitor \
-     --env-file .env \
-     -v ./data:/app/data \
-     litter-robot-monitor
-
-   mkdir -p ~/.config/systemd/user
-   podman generate systemd --name litter-robot-monitor --files --restart-policy=always
-   mv container-litter-robot-monitor.service ~/.config/systemd/user/
+   mkdir -p ~/.config/containers/systemd
+   cp litter-robot-monitor.container.example ~/.config/containers/systemd/litter-robot-monitor.container
+   # edit the copied file if your repo path differs from ~/repositories/litter-robot-monitor
 
    systemctl --user daemon-reload
-   systemctl --user enable --now container-litter-robot-monitor.service
+   systemctl --user enable --now litter-robot-monitor.service
 
    # lets the user service start on boot even before you log in
    loginctl enable-linger "$(whoami)"
    ```
 
+   Systemd's Podman generator turns the `.container` file into a service
+   automatically on `daemon-reload` — no `podman create` step needed.
+
 5. Check logs / stop it:
 
    ```bash
-   journalctl --user -u container-litter-robot-monitor.service -f
-   systemctl --user stop container-litter-robot-monitor.service
+   journalctl --user -u litter-robot-monitor.service -f
+   systemctl --user stop litter-robot-monitor.service
    ```
 
-   To pick up code changes later: rebuild the image, then
-   `podman rm -f litter-robot-monitor` and repeat step 4's `podman create` +
-   `generate systemd` + `enable --now`.
+   To pick up code changes later: rebuild the image
+   (`podman build -t litter-robot-monitor .`), then
+   `systemctl --user restart litter-robot-monitor.service`.
+
+   If your Podman version is older than 4.4 and doesn't support Quadlets,
+   fall back to `podman create --name litter-robot-monitor --env-file .env
+   -v ./data:/app/data litter-robot-monitor` followed by `podman generate
+   systemd --name litter-robot-monitor --files --restart-policy=always`,
+   moving the generated file into `~/.config/systemd/user/`.
 
 ## Verifying a deployment actually works
 

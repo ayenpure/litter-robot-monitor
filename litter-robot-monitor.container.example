@@ -1,0 +1,14 @@
+[Unit]
+Description=Litter-Robot monitor
+After=network-online.target
+
+[Container]
+Image=localhost/litter-robot-monitor:latest
+EnvironmentFile=%h/repositories/litter-robot-monitor/.env
+Volume=%h/repositories/litter-robot-monitor/data:/app/data
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
